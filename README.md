@@ -1,36 +1,37 @@
 # HW4
 ## Devlog
-In this project, the Model–View–Controller (MVC) design pattern is used to keep the Player logic decoupled from the rest of the game systems. While the model aspect of the game is relatively minimal, the separation between control and view plays a major role in keeping the code organized, flexible, and easier to debug.
+In this project, the Model–View–Controller (MVC) design pattern is used to keep the Player code decoupled from the other systems in the game. While the model aspect of this game is less relevant, the view and controller layers play an important role in structuring the project.
 
-Controller: PlayerController
+The MVC structure allows each system to focus on a single responsibility, which made debugging and iteration much easier during development.
 
-The control side of the MVC pattern is primarily defined by the PlayerController class.
+Controller
 
-This script is responsible for handling all player-related input and gameplay logic, including:
+The controller side of the MVC pattern is defined by the PlayerController class.
 
-Reading input in Update()
+PlayerController is responsible for all player input and gameplay behavior, including:
 
-Applying upward force using the Rigidbody2D when the player flaps
+Reading player input in Update()
 
-Detecting collisions and triggers using OnCollisionEnter2D() and OnTriggerEnter2D()
+Applying movement forces to the Rigidbody2D
 
-Broadcasting gameplay events such as scoring and game over
+Detecting collisions with pipes and triggers
 
-For example, the variable:
+Deciding when the player scores or dies
 
-public static event Action Scored;
-public static event Action Died;
+The PlayerController does not directly modify UI elements or play audio. Instead, it communicates important gameplay moments through events.
 
+For example, instead of directly changing UI text or playing sounds, the PlayerController raises events such as:
 
-allows the PlayerController to signal that something has happened without directly referencing any UI or audio systems.
+Scored.Invoke()
+Died.Invoke()
 
-Because of this, the PlayerController never modifies UI text, never plays audio clips, and never manages score values directly. It only communicates intent through events.
+This ensures the player logic remains focused only on control logic.
 
-This keeps the player code focused entirely on control logic, which is the key responsibility of the controller in MVC.
+View
 
-View: ScoreView and AudioView
+The view side of the MVC pattern is implemented using multiple classes that respond to events.
 
-The view side of the pattern is implemented using multiple classes, primarily:
+The primary view scripts in this project are:
 
 ScoreView
 
@@ -38,52 +39,27 @@ AudioView
 
 ScoreView
 
-The ScoreView script is responsible only for displaying information to the player. It holds a reference to:
+ScoreView is responsible for displaying the current score on the screen. It contains a reference to a TextMeshProUGUI object used to show the score visually.
 
-[SerializeField] private TextMeshProUGUI scoreText;
+ScoreView subscribes to the scoring event when enabled and updates the text whenever the score changes. It does not calculate the score or determine when scoring occurs — it only displays information.
 
-
-and subscribes to events in OnEnable():
-
-PlayerController.Scored += UpdateScore;
-
-
-When the score changes, the view updates the text, but it does not know why the score changed or what caused it. It simply reacts to events.
-
-This allows the UI system to remain completely independent from gameplay logic.
+Because of this, ScoreView has no direct dependency on PlayerController.
 
 AudioView
 
-The AudioView class follows the same pattern. It contains references to audio clips such as:
+AudioView is responsible for playing sound effects such as flap, score, and hit sounds.
 
-public AudioClip flapClip;
-public AudioClip scoreClip;
-public AudioClip hitClip;
+It listens for the same gameplay events triggered by PlayerController and plays the appropriate AudioClip in response. The player logic does not know which sound is played or how it is played.
 
+This allows audio behavior to be changed or removed without modifying gameplay code.
 
-and listens for gameplay events to determine when sounds should play.
+Events and Decoupling
 
-The PlayerController does not know what sound is being played or how it is played—it only raises events like Scored or Died.
+Events are the main mechanism used to decouple the controller and view layers.
 
-This separation ensures that audio can be modified, replaced, or removed entirely without changing any gameplay code.
+Rather than having PlayerController reference UI or audio objects directly, it simply broadcasts events when something happens.
 
-Events for Decoupling
-
-Events are the main mechanism used to decouple the controller from the views.
-
-Instead of writing code like:
-
-scoreText.text = score.ToString();
-audioSource.Play();
-
-
-the PlayerController simply triggers:
-
-Scored?.Invoke();
-Died?.Invoke();
-
-
-Any number of view systems can subscribe to these events:
+Any number of systems can subscribe to these events, including:
 
 UI
 
@@ -93,63 +69,42 @@ Animations
 
 Screen effects
 
-This makes the system highly modular and prevents circular dependencies between scripts.
+This design prevents circular dependencies between scripts and makes the project modular and easier to maintain.
 
 Singleton: ScoreManager
 
 The project also uses a Singleton pattern through the ScoreManager class.
 
-The Singleton ensures there is only one authoritative score state shared across the game:
+ScoreManager contains a static Instance variable that ensures only one score system exists in the game.
 
-public static ScoreManager Instance;
-
-
-The ScoreManager is responsible for:
+Its responsibilities include:
 
 Tracking the current score value
 
-Responding to the Scored event
+Responding to scoring events
 
-Providing a global point of access for score data
+Providing global access to score data
 
-Because ScoreManager exists independently of both the PlayerController and the UI, neither system directly depends on each other.
+Because ScoreManager exists independently from PlayerController and ScoreView, neither system directly depends on the other.
 
-This allows:
-
-The PlayerController to remain unaware of how scoring is stored
-
-The ScoreView to display score data without calculating it
-
-The game logic to remain stable even if UI or audio changes
+This further reinforces the separation between control and view layers.
 
 Reflection
 
-Using MVC made debugging significantly easier, especially when dealing with issues such as scoring and collisions. For example, when it became difficult to score in the game due to pipe spacing and collider placement, the issue was isolated to level design and prefabs—not the player logic itself.
+Using the MVC pattern helped keep the Player code clean and isolated from presentation systems such as UI and audio.
 
-Because the PlayerController did not contain UI or audio code, gameplay bugs could be tested without worrying about breaking the presentation layer.
+During development, gameplay tuning — such as pipe spacing and timing — made scoring somewhat difficult, which made the game a bit hard to score at times. However, because the logic was decoupled, these issues could be adjusted through prefabs and values without changing the PlayerController code itself.
 
-Although the model portion of the architecture is relatively simple in this project, the clear separation between controller and view demonstrates how MVC helps keep systems modular, readable, and maintainable even in a small game.
+Overall, the MVC structure made the project easier to debug, extend, and understand.
 
 Summary
 
 Controller: PlayerController
+View: ScoreView and AudioView
+Communication: C# events
+Shared state: ScoreManager Singleton
 
-Handles input, physics, and gameplay events
-
-View: ScoreView, AudioView
-
-Display UI and play sound in response to events
-
-Events:
-
-Used to communicate between systems without direct references
-
-Singleton: ScoreManager
-
-Maintains centralized score state
-
-Overall, the MVC pattern allows the Player code to remain decoupled from UI and audio systems, resulting in a cleaner architecture and a more scalable project structure.
-
+By separating responsibilities across these systems, the project maintains a clean MVC-style architecture that keeps the Player code decoupled from UI, audio, and scoring systems.
 ## Open-Source Assets
 If you added any other assets, list them here!
 - [Brackey's Platformer Bundle](https://brackeysgames.itch.io/brackeys-platformer-bundle) - sound effects
