@@ -2,10 +2,18 @@ using UnityEngine;
 
 public class PipeMover : MonoBehaviour
 {
-    [SerializeField] private float moveSpeed = 2f;
+    [SerializeField] private float speed = 2.5f;
+    [SerializeField] private float destroyX = -12f;
 
-    void Update()
+    private void Update()
     {
-        transform.position += Vector3.left * moveSpeed * Time.deltaTime;
+        if (GameController.IsGameOver) return;
+
+        transform.position += Vector3.left * speed * Time.deltaTime;
+
+        if (transform.position.x < destroyX)
+        {
+            Destroy(gameObject);
+        }
     }
 }
