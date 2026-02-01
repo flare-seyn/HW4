@@ -71,7 +71,7 @@ Screen effects
 
 This design prevents circular dependencies between scripts and makes the project modular and easier to maintain.
 
-Singleton: ScoreManager
+# Singleton: ScoreManager
 
 The project also uses a Singleton pattern through the ScoreManager class.
 
