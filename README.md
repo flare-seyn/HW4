@@ -4,7 +4,7 @@ In this project, the Model–View–Controller (MVC) design pattern is used to k
 
 The MVC structure allows each system to focus on a single responsibility, which made debugging and iteration much easier during development.
 
-Controller
+# Controller
 
 The controller side of the MVC pattern is defined by the PlayerController class.
 
@@ -27,7 +27,7 @@ Died.Invoke()
 
 This ensures the player logic remains focused only on control logic.
 
-View
+# View
 
 The view side of the MVC pattern is implemented using multiple classes that respond to events.
 
@@ -37,7 +37,7 @@ ScoreView
 
 AudioView
 
-ScoreView
+# ScoreView
 
 ScoreView is responsible for displaying the current score on the screen. It contains a reference to a TextMeshProUGUI object used to show the score visually.
 
@@ -53,7 +53,7 @@ It listens for the same gameplay events triggered by PlayerController and plays 
 
 This allows audio behavior to be changed or removed without modifying gameplay code.
 
-Events and Decoupling
+# Events and Decoupling
 
 Events are the main mechanism used to decouple the controller and view layers.
 
@@ -97,7 +97,7 @@ During development, gameplay tuning — such as pipe spacing and timing — made
 
 Overall, the MVC structure made the project easier to debug, extend, and understand.
 
-Summary
+# Summary
 
 Controller: PlayerController
 View: ScoreView and AudioView
